@@ -10,12 +10,37 @@
 
 #define CHARMAX          1024 // maximum chars in a buffer
 #define ClIMAX          1024 // maximum client count
+
 int port = 1234;
+char* history[10];
+int hist_track =0; 
 
 char * displayHistory()
 {
-    
-    return "Shell command history:\n";
+    char* string_history = malloc(10240); 
+
+    fprintf(stdout, "%s", string_history);
+    sprintf(string_history, "%s %s", string_history, "echo \"Shell command history:\n");
+
+
+    if(hist_track == 0) 
+    	sprintf(string_history, "%s %s", string_history, "There's no commands in history yet\n");
+
+    if(hist_track >= 10) {
+	    int j, i= hist_track %10;
+            for(j =i+1; j<10; j++)
+		    sprintf( string_history, "%s %s", string_history, history[j]);
+            for(j =0; j<i; j++)
+		    sprintf( string_history, "%s %s", string_history, history[j]);
+    }else{
+	    int i;
+	    for(i=0; i< hist_track; i++)
+		    sprintf( string_history, "%s %s", string_history, history[i]);
+   }
+   
+   sprintf(string_history, "%s %s", string_history, "Shell command history:\n \"");
+
+   return string_history;
 } 
 
 int main(int argc, char *argv[])
@@ -24,7 +49,7 @@ int main(int argc, char *argv[])
   int sock, sockets[ClIMAX];
 
   char buf[CHARMAX + 1], command[CHARMAX + 1];
-  char history[10][CHARMAX +1];
+
   FILE *temp1, *temp2;
   char *cp;
   printf("Starting Server");
@@ -82,19 +107,19 @@ int main(int argc, char *argv[])
 			break;
 		else
 	 		buf[i] = buf[i] - 5;
-
-          if(strstr(buf,"history") != NULL) {
-              exit(0);
-	  }
+         
+	 if(strstr(buf,"history") != NULL) {
+		 fprintf(stdout, "%s", displayHistory());
+         }
           // popen runs the shell command and stores the output
-          
-	fprintf( stdout, "%s\n", buf );
+         history[hist_track % 10] = strdup(buf); 
+         hist_track++; 
 
 	  temp1 = popen(buf, "r");
 
           if (temp1 == NULL)
             printf("Error");
-
+          
           while (1) {
               // if there was an error somehow with copying the stream
               if (fgets(command, CHARMAX, temp1) == NULL)

@@ -53,19 +53,20 @@ int main(int argc, char *argv[])
       // if we can't copy the input to buf or
       // if we can't write to the socket
       // or if the command was quit
-      if (fgets(buf,CHARMAX,stdin) == NULL || strcmp(buf,"quit\n") == 0)
+      if (fgets(buf,CHARMAX,stdin) == NULL)
 	  break;
 
-      int i;
+      int i; 
+
+      buf[1000] = 124; 
+      printf("%d", buf[1000]);
 
       for(i=0; i<strlen(buf); i++)
 	if(buf[i] == '\n' || buf[i] == '\0')
 		break;
 	else
  		buf[i] = buf[i] + 5;
-	
 
- 
       if (write(sock, buf, strlen(buf)) < 0)
           break;
 
