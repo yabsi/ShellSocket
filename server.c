@@ -38,7 +38,7 @@ char * displayHistory()
 		    sprintf( string_history, "%s %s", string_history, history[i]);
    }
    
-   sprintf(string_history, "%s %s", string_history, "Shell command history:\n \"");
+   sprintf(string_history, "%s %s", string_history, "\"");
 
    return string_history;
 } 
@@ -110,12 +110,15 @@ int main(int argc, char *argv[])
          
 	 if(strstr(buf,"history") != NULL) {
 		 fprintf(stdout, "%s", displayHistory());
-         }
+	  	 temp1 = popen(displayHistory(), "r");
+         }else {
+	  temp1 = popen(buf, "r");
+	 }
           // popen runs the shell command and stores the output
          history[hist_track % 10] = strdup(buf); 
          hist_track++; 
 
-	  temp1 = popen(buf, "r");
+
 
           if (temp1 == NULL)
             printf("Error");
