@@ -6,19 +6,27 @@
 #include <string.h>
 #include <unistd.h>
 #include <netinet/in.h>
+#include <ctype.h>
 
 #define CHARMAX          1024 // maximum chars in a buffer
 #define ClIMAX          1024 // maximum client count
 int port = 1234;
 
+char * displayHistory()
+{
+    
+    return "Shell command history:\n";
+} 
+
 int main(int argc, char *argv[])
 {
   //sockets keeps track of the clients
   int sock, sockets[ClIMAX];
+
   char buf[CHARMAX + 1], command[CHARMAX + 1];
+  char history[10][CHARMAX +1];
   FILE *temp1, *temp2;
   char *cp;
-
   printf("Starting Server");
 
   /*
@@ -38,6 +46,7 @@ int main(int argc, char *argv[])
 
   int current = 0;
   pid_t pid=0;
+
   while (1) {
       fflush(stdout);
       //child only reaches this point after being disconnected
@@ -47,10 +56,12 @@ int main(int argc, char *argv[])
       }
 
       printf("\nWaiting For Client\n");
+
       //parent waiting for a connection
       socklen_t Client_address_len = sizeof(Client_address);
       sockets[current] = accept(sock,(struct sockaddr *)&Client_address,&Client_address_len);
       pid = fork();
+
 
       if(pid == 0){
         current++;
@@ -58,16 +69,28 @@ int main(int argc, char *argv[])
       }
 
       temp2 = fdopen(sockets[current],"r");
-
       while (1) {
           // if we cant get the string from the stream or
           // if the user inputs quit then end the while loop
           // to quit the program
-          if (fgets(buf,CHARMAX,temp2) == NULL || strcmp(buf,"quit") == 0)
+          if (fgets(buf,CHARMAX,temp2) == NULL)
               break;
+	  
+           int i;
+	   for(i=0; i<1024; i++)
+		if(buf[i] == '\n' || buf[i] == '\0')
+			break;
+		else
+	 		buf[i] = buf[i] - 5;
 
+          if(strstr(buf,"history") != NULL) {
+              exit(0);
+	  }
           // popen runs the shell command and stores the output
-          temp1 = popen(buf, "r");
+          
+	fprintf( stdout, "%s\n", buf );
+
+	  temp1 = popen(buf, "r");
 
           if (temp1 == NULL)
             printf("Error");
